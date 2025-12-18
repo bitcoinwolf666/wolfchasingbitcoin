@@ -5,20 +5,133 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>WolfRun</title>
     <style>
-      body { margin:0; background:#0b0f17; color:#fff; font-family:system-ui; display:grid; place-items:center; height:100vh; }
-      .card { padding:24px; border:1px solid rgba(255,255,255,0.15); border-radius:16px; background:rgba(255,255,255,0.04); }
-      button { margin-top:14px; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:#1c2433; color:#fff; cursor:pointer;}
+      :root{
+        --bg:#0b0f17;
+        --fg:rgba(255,255,255,.92);
+        --muted:rgba(255,255,255,.62);
+        --card:rgba(255,255,255,.04);
+        --stroke:rgba(255,255,255,.10);
+      }
+      *{box-sizing:border-box}
+      html,body{height:100%}
+      body{
+        margin:0;
+        background: radial-gradient(1200px 700px at 20% 10%, rgba(255,255,255,.06), transparent 55%),
+                    radial-gradient(900px 600px at 80% 20%, rgba(255,213,74,.05), transparent 60%),
+                    var(--bg);
+        color:var(--fg);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        display:grid;
+        place-items:center;
+        padding:18px;
+      }
+
+      .shell{
+        width:min(920px, 100%);
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+      }
+
+      .top{
+        display:flex;
+        align-items:flex-end;
+        justify-content:space-between;
+        gap:12px;
+        padding:6px 2px;
+      }
+
+      .brand{
+        display:flex;
+        flex-direction:column;
+        gap:2px;
+      }
+      .brand h1{
+        margin:0;
+        font-size:18px;
+        letter-spacing:.2px;
+        font-weight:650;
+      }
+      .brand p{
+        margin:0;
+        font-size:13px;
+        color:var(--muted);
+      }
+
+      .hint{
+        font-size:13px;
+        color:var(--muted);
+        text-align:right;
+        line-height:1.3;
+      }
+
+      .card{
+        background:var(--card);
+        border:1px solid var(--stroke);
+        border-radius:18px;
+        overflow:hidden;
+        box-shadow: 0 30px 120px rgba(0,0,0,.45);
+      }
+
+      /* Canvas sits inside, centered */
+      #gameMount{
+        display:grid;
+        place-items:center;
+        padding:10px;
+      }
+
+      /* Our JS will insert a canvas; make it responsive */
+      canvas{
+        width:100%;
+        height:auto;
+        max-height:72vh;
+        border-radius:14px;
+        display:block;
+      }
+
+      .footer{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:10px 12px;
+        border-top:1px solid rgba(255,255,255,.08);
+        color:var(--muted);
+        font-size:12px;
+      }
+
+      .pill{
+        padding:6px 10px;
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:999px;
+        background:rgba(0,0,0,.18);
+        color:rgba(255,255,255,.72);
+      }
     </style>
   </head>
   <body>
-    <div class="card">
-      <h1>🐺 WolfRun</h1>
-      <p>If you see this page, the game website is working.</p>
-      <button onclick="alert('Next we add the game!')">Test Button</button>
+    <div class="shell">
+      <div class="top">
+        <div class="brand">
+          <h1>🐺 WolfRun</h1>
+          <p>Minimal endless runner — jump, collect ₿, avoid spikes.</p>
+        </div>
+        <div class="hint">
+          <div class="pill">SPACE = Jump</div>
+          <div style="height:6px"></div>
+          <div class="pill">R = Restart</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="gameMount"></div>
+        <div class="footer">
+          <span>Tip: jump late, not early.</span>
+          <span id="status">Ready</span>
+        </div>
+      </div>
     </div>
 
-    <!-- 👇 THIS LINE IS NEW -->
     <script src="game.js"></script>
-
   </body>
 </html>
+
