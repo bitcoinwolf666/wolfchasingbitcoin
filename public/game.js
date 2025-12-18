@@ -10,6 +10,9 @@ const groundY = 210;
 let worldSpeed = 3;
 let gameOver = false;
 
+// ground moving effect
+let groundOffset = 0;
+
 // --- WOLF (player) ---
 const wolf = {
   x: 120,
@@ -22,6 +25,7 @@ const wolf = {
 
 // --- SCORE ---
 let score = 0;
+let bestScore = Number(localStorage.getItem("bestScore") || 0);
 
 // --- COINS ---
 let coins = [];
@@ -32,6 +36,31 @@ let obstacles = [];
 let obstacleTimer = 0;
 
 const keys = { jump: false };
+
+// --- SIMPLE COIN SOUND (no files needed) ---
+let audioCtx = null;
+function coinDing() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+
+    o.type = "sine";
+    o.frequency.value = 880; // “ding”
+    g.gain.value = 0.08;
+
+    o.connect(g);
+    g.connect(audioCtx.destination);
+
+    o.start();
+    // quick fade out
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+    o.stop(audioCtx.currentTime + 0.09);
+  } catch {
+    // ignore if audio not allowed
+  }
+}
 
 document.addEventListener("keydown", (e) => {
   if (e.key === " ") keys.jump = true;
@@ -120,7 +149,7 @@ function updateWolf() {
 function updateCoins() {
   // spawn coins
   coinTimer += 1;
-  if (coinTimer > 60) { // about once per second
+  if (coinTimer > 60) {
     spawnCoin();
     coinTimer = 0;
   }
@@ -138,7 +167,10 @@ function updateCoins() {
     if (hit) {
       c.collected = true;
       score += 1;
-      if (score % 5 === 0) worldSpeed += 0.3; // speed up like Sonic
+      coinDing();
+
+      // speed up like Sonic
+      if (score % 5 === 0) worldSpeed += 0.3;
     }
   }
 }
@@ -148,7 +180,6 @@ function updateObstacles() {
 
   // spawn obstacle sometimes (not too often)
   if (obstacleTimer > 110) {
-    // small randomness so it's not predictable
     if (Math.random() < 0.7) spawnObstacle();
     obstacleTimer = 0;
   }
@@ -164,6 +195,12 @@ function updateObstacles() {
   for (const o of obstacles) {
     if (rectHitsRect(wolfRect, o)) {
       gameOver = true;
+
+      // save best score
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem("bestScore", String(bestScore));
+      }
       break;
     }
   }
@@ -173,8 +210,9 @@ function drawHUD() {
   ctx.fillStyle = "white";
   ctx.font = "18px system-ui";
   ctx.fillText("Score: " + score, 12, 24);
-  ctx.fillText("Speed: " + worldSpeed.toFixed(1), 12, 46);
-  ctx.fillText("Jump: SPACE", 12, 68);
+  ctx.fillText("Best: " + bestScore, 12, 46);
+  ctx.fillText("Speed: " + worldSpeed.toFixed(1), 12, 68);
+  ctx.fillText("Jump: SPACE", 12, 90);
 
   if (gameOver) {
     ctx.fillStyle = "rgba(0,0,0,0.6)";
@@ -189,6 +227,50 @@ function drawHUD() {
   }
 }
 
+function drawWolf() {
+  // body
+  ctx.fillStyle = "white";
+  ctx.fillRect(wolf.x, wolf.y, wolf.w, wolf.h);
+
+  // ears
+  ctx.fillStyle = "white";
+  ctx.beginPath();
+  ctx.moveTo(wolf.x + 8, wolf.y);
+  ctx.lineTo(wolf.x + 16, wolf.y - 10);
+  ctx.lineTo(wolf.x + 24, wolf.y);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(wolf.x + 22, wolf.y);
+  ctx.lineTo(wolf.x + 30, wolf.y - 10);
+  ctx.lineTo(wolf.x + 38, wolf.y);
+  ctx.closePath();
+  ctx.fill();
+
+  // eye
+  ctx.fillStyle = "#0b0f17";
+  ctx.fillRect(wolf.x + 28, wolf.y + 12, 4, 4);
+}
+
+function drawGround() {
+  // ground base line
+  ctx.fillStyle = "#444";
+  ctx.fillRect(0, groundY + 40, canvas.width, 5);
+
+  // moving stripes (speed feeling)
+  groundOffset += worldSpeed;
+  ctx.strokeStyle = "rgba(255,255,255,0.15)";
+  ctx.lineWidth = 2;
+
+  for (let x = -(groundOffset % 40); x < canvas.width; x += 40) {
+    ctx.beginPath();
+    ctx.moveTo(x, groundY + 45);
+    ctx.lineTo(x + 20, groundY + 45);
+    ctx.stroke();
+  }
+}
+
 function drawScene() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -197,8 +279,7 @@ function drawScene() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // ground
-  ctx.fillStyle = "#444";
-  ctx.fillRect(0, groundY + 40, canvas.width, 5);
+  drawGround();
 
   // coins
   for (const c of coins) drawCoin(c);
@@ -207,9 +288,9 @@ function drawScene() {
   for (const o of obstacles) drawObstacle(o);
 
   // wolf
-  ctx.fillStyle = "white";
-  ctx.fillRect(wolf.x, wolf.y, wolf.w, wolf.h);
+  drawWolf();
 
+  // UI
   drawHUD();
 }
 
@@ -220,6 +301,7 @@ function restart() {
   obstacles = [];
   coinTimer = 0;
   obstacleTimer = 0;
+  groundOffset = 0;
 
   wolf.y = groundY;
   wolf.vy = 0;
