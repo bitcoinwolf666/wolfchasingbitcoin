@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html>
   <head>
@@ -9,9 +8,11 @@
       :root{
         --bg:#0b0f17;
         --fg:rgba(255,255,255,.92);
-        --muted:rgba(255,255,255,.62);
+        --muted:rgba(255,255,255,.60);
         --card:rgba(255,255,255,.04);
         --stroke:rgba(255,255,255,.10);
+        --accent:#ffd54a;
+        --danger:#ff4d6d;
       }
       *{box-sizing:border-box}
       html,body{height:100%}
@@ -28,12 +29,21 @@
         padding:18px;
         overflow:hidden;
       }
-      .shell{width:min(920px,100%); display:flex; flex-direction:column; gap:12px;}
+      .shell{width:min(980px,100%); display:flex; flex-direction:column; gap:12px;}
       .top{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding:6px 2px;}
+      .brand{display:flex; flex-direction:column; gap:2px;}
       .brand h1{margin:0; font-size:18px; font-weight:650; letter-spacing:.2px}
       .brand p{margin:0; font-size:13px; color:var(--muted)}
-      .hint{font-size:12px; color:var(--muted); text-align:right; line-height:1.3}
-      .pill{display:inline-block; padding:6px 10px; border:1px solid rgba(255,255,255,.10); border-radius:999px; background:rgba(0,0,0,.18)}
+      .pills{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+      .pill{
+        font-size:12px;
+        color:rgba(255,255,255,.72);
+        padding:6px 10px;
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:999px;
+        background:rgba(0,0,0,.18);
+        user-select:none;
+      }
       .card{
         background:var(--card);
         border:1px solid var(--stroke);
@@ -45,9 +55,49 @@
       canvas{width:100%; height:auto; max-height:72vh; border-radius:14px; display:block;}
       .footer{
         display:flex; justify-content:space-between; align-items:center;
-        padding:10px 12px; border-top:1px solid rgba(255,255,255,.08);
-        color:var(--muted); font-size:12px;
+        padding:10px 12px;
+        border-top:1px solid rgba(255,255,255,.08);
+        color:var(--muted);
+        font-size:12px;
       }
+
+      /* Minimal overlay UI */
+      .overlay{
+        position:fixed;
+        inset:0;
+        display:none;
+        place-items:center;
+        padding:18px;
+        background:rgba(0,0,0,.55);
+        backdrop-filter: blur(6px);
+      }
+      .overlay.show{display:grid;}
+      .panel{
+        width:min(520px, 100%);
+        background:rgba(255,255,255,.05);
+        border:1px solid rgba(255,255,255,.12);
+        border-radius:18px;
+        padding:18px;
+        box-shadow:0 30px 120px rgba(0,0,0,.55);
+      }
+      .panel h2{margin:0 0 6px; font-size:18px}
+      .panel p{margin:0 0 14px; color:var(--muted); font-size:13px; line-height:1.4}
+      .row{display:flex; gap:10px; flex-wrap:wrap}
+      button{
+        appearance:none;
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(0,0,0,.18);
+        color:rgba(255,255,255,.9);
+        padding:10px 12px;
+        border-radius:12px;
+        font-size:13px;
+        cursor:pointer;
+      }
+      button.primary{
+        border-color:rgba(255,213,74,.35);
+        background:rgba(255,213,74,.12);
+      }
+      button:active{transform:translateY(1px)}
     </style>
   </head>
   <body>
@@ -57,9 +107,9 @@
           <h1>🐺 WolfRun</h1>
           <p>Minimal endless runner — jump, collect ₿, avoid spikes.</p>
         </div>
-        <div class="hint">
+        <div class="pills">
           <span class="pill">SPACE / Tap = Jump</span>
-          <span style="display:inline-block;width:8px"></span>
+          <span class="pill">P = Pause</span>
           <span class="pill">R = Restart</span>
         </div>
       </div>
@@ -67,8 +117,19 @@
       <div class="card">
         <div id="gameMount"></div>
         <div class="footer">
-          <span>Tip: jump late, not early.</span>
+          <span id="tip">Tip: jump late, not early.</span>
           <span id="status">Ready</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="overlay" class="overlay show">
+      <div class="panel">
+        <h2 id="overlayTitle">WolfRun</h2>
+        <p id="overlayText">Press <b>SPACE</b> (or tap) to jump. Avoid spikes. Collect ₿ to increase your score.</p>
+        <div class="row">
+          <button id="btnStart" class="primary">Start</button>
+          <button id="btnHow">How to play</button>
         </div>
       </div>
     </div>
@@ -76,3 +137,4 @@
     <script src="game.js"></script>
   </body>
 </html>
+
