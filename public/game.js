@@ -1,21 +1,42 @@
 const canvas = document.createElement("canvas");
-canvas.width = 400;
-canvas.height = 200;
+canvas.width = 500;
+canvas.height = 250;
 document.body.appendChild(canvas);
 
 const ctx = canvas.getContext("2d");
 
-let wolfX = 20;
+let wolfX = 200;
+
+// keyboard state
+const keys = {
+  left: false,
+  right: false
+};
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") keys.left = true;
+  if (e.key === "ArrowRight") keys.right = true;
+});
+
+document.addEventListener("keyup", (e) => {
+  if (e.key === "ArrowLeft") keys.left = false;
+  if (e.key === "ArrowRight") keys.right = false;
+});
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // draw wolf (simple square for now)
-  ctx.fillStyle = "white";
-  ctx.fillRect(wolfX, 120, 40, 40);
+  // move wolf
+  if (keys.left) wolfX -= 3;
+  if (keys.right) wolfX += 3;
 
-  wolfX += 1;
-  if (wolfX > canvas.width) wolfX = -40;
+  // keep wolf on screen
+  if (wolfX < 0) wolfX = 0;
+  if (wolfX > canvas.width - 40) wolfX = canvas.width - 40;
+
+  // draw wolf (still a square for now)
+  ctx.fillStyle = "white";
+  ctx.fillRect(wolfX, 150, 40, 40);
 
   requestAnimationFrame(draw);
 }
