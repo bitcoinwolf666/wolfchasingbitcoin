@@ -3,15 +3,13 @@ const path = require("path");
 
 const app = express();
 
-// serve the public folder
+// Serve files from /public (index.html will load at "/")
 app.use(express.static(path.join(__dirname, "public")));
 
-// health check (useful for testing)
-app.get("/health", (req, res) => {
-  res.json({ ok: true });
-});
+// Optional health check
+app.get("/health", (req, res) => res.json({ ok: true }));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log("Server running on port " + PORT);
 });
